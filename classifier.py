@@ -2,8 +2,12 @@
 
 import csv
 import keras
+import random
 
 from numpy import array as array
+from keras.models import Sequential
+from keras.layers import Dense, Activation
+from keras import backend
 
 def load_dataset(path):
     with open(path, "r") as dataset:
@@ -12,18 +16,27 @@ def load_dataset(path):
         next(dataset_reader) #Skip headers
         dataset_list = [row for row in dataset_reader]
 
-    data_cut1 = int(len(dataset_list) * 0.7)
-    data_cut2 = int(data_cut1 + len(dataset_list) * 0.15)
+    male_data = dataset_list[:len(dataset_list)//2]
+    female_data = dataset_list[len(dataset_list)//2:]
 
-    train_data = array(dataset_list[:data_cut1])
+    data_cut1 = int(len(male_data) * 0.7)
+    data_cut2 = int(data_cut1 + len(male_data) * 0.15)
+
+    train_list = male_data[:data_cut1] + female_data[:data_cut1]
+    random.shuffle(train_list)
+    train_data = array(train_list)
     train_data_x = train_data[:, :-1]
     train_data_y = train_data[:, -1]
 
-    validation_data = array(dataset_list[data_cut1:data_cut2])
+    validation_list = male_data[data_cut1:data_cut2] + female_data[data_cut1:data_cut2]
+    random.shuffle(validation_list)
+    validation_data = array(validation_list)
     validation_data_x = validation_data[:, :-1]
     validation_data_y = validation_data[:, -1]
 
-    test_data = array(dataset_list[data_cut2:])
+    test_list = male_data[data_cut2:] + female_data[data_cut2:]
+    random.shuffle(test_list)
+    test_data = array(test_list)
     test_data_x = test_data[:, :-1]
     test_data_y = test_data[:, -1]
 
@@ -31,18 +44,61 @@ def load_dataset(path):
             (validation_data_x, validation_data_y), \
             (test_data_x, test_data_y))
 
-def main():
+
+def create_network(num_features, layer_sizes, activation):
+    network = Sequential()
+    network.add(Dense(layer_sizes[0], input_dim = num_features))
+
+    for layer_size in layer_sizes[1:]:
+        network.add(Dense(layer_size, activation = activation))
+
+    return network
+
+
+def run_network():
     #Male is 0, Female is 1
     (train_x, train_y), (valid_x, valid_y), (test_x, test_y) = load_dataset("data/voice.csv")
 
-    batch_size = 150
+    batch_size = 200
     num_classes = 2
-    epochs = 20
+    epochs = 50
 
     train_y = keras.utils.to_categorical(train_y, num_classes)
     valid_y = keras.utils.to_categorical(valid_y, num_classes)
     test_y = keras.utils.to_categorical(test_y, num_classes)
 
+    model = create_network(
+                num_features = 20,
+                layer_sizes = [5, 2],
+                activation = "sigmoid")
+
+    model.compile(optimizer = "rmsprop",
+                    loss = "binary_crossentropy",
+                    metrics = ["accuracy"])
+
+    model.fit(train_x, train_y,
+        batch_size = batch_size,
+        epochs = epochs,
+        validation_data = (valid_x, valid_y))
+
+    score = model.evaluate(test_x, test_y,
+        batch_size = batch_size)
+
+    return score[0] #accuracy
+
+
+def main():
+    iterations = 30
+    result = 0
+
+    for i in range(iterations):
+        print("\n\n\nRunning iteration %d\n\n" % (i+1))
+        result += run_network()
+
+    result = result / iterations
+    print("\n\nMean accuracy after %d iterations: %s" % (iterations, result))
+
+    backend.clear_session()
 
 
 if __name__ == "__main__":
