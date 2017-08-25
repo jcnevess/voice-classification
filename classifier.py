@@ -9,15 +9,16 @@ from keras.models import Sequential
 from keras.layers import Dense, Activation
 from keras import backend
 
+
 def load_dataset(path):
     with open(path, "r") as dataset:
         dataset_reader = csv.reader(dataset)
 
-        next(dataset_reader) #Skip headers
+        next(dataset_reader)  # Skip headers
         dataset_list = [row for row in dataset_reader]
 
-    male_data = dataset_list[:len(dataset_list)//2]
-    female_data = dataset_list[len(dataset_list)//2:]
+    male_data = dataset_list[:len(dataset_list) // 2]
+    female_data = dataset_list[len(dataset_list) // 2:]
 
     data_cut1 = int(len(male_data) * 0.7)
     data_cut2 = int(data_cut1 + len(male_data) * 0.15)
@@ -40,23 +41,23 @@ def load_dataset(path):
     test_data_x = test_data[:, :-1]
     test_data_y = test_data[:, -1]
 
-    return ((train_data_x, train_data_y), \
-            (validation_data_x, validation_data_y), \
+    return ((train_data_x, train_data_y),
+            (validation_data_x, validation_data_y),
             (test_data_x, test_data_y))
 
 
 def create_network(num_features, layer_sizes, activation):
     network = Sequential()
-    network.add(Dense(layer_sizes[0], input_dim = num_features))
+    network.add(Dense(layer_sizes[0], input_dim=num_features))
 
     for layer_size in layer_sizes[1:]:
-        network.add(Dense(layer_size, activation = activation))
+        network.add(Dense(layer_size, activation=activation))
 
     return network
 
 
 def run_network():
-    #Male is 0, Female is 1
+    # Male is 0, Female is 1
     (train_x, train_y), (valid_x, valid_y), (test_x, test_y) = load_dataset("data/voice.csv")
 
     batch_size = 200
@@ -68,23 +69,23 @@ def run_network():
     test_y = keras.utils.to_categorical(test_y, num_classes)
 
     model = create_network(
-                num_features = 20,
-                layer_sizes = [5, 2],
-                activation = "sigmoid")
+        num_features=20,
+        layer_sizes=[5, 2],
+        activation="sigmoid")
 
-    model.compile(optimizer = "rmsprop",
-                    loss = "binary_crossentropy",
-                    metrics = ["accuracy"])
+    model.compile(optimizer="rmsprop",
+                  loss="binary_crossentropy",
+                  metrics=["accuracy"])
 
     model.fit(train_x, train_y,
-        batch_size = batch_size,
-        epochs = epochs,
-        validation_data = (valid_x, valid_y))
+              batch_size=batch_size,
+              epochs=epochs,
+              validation_data=(valid_x, valid_y))
 
     score = model.evaluate(test_x, test_y,
-        batch_size = batch_size)
+                           batch_size=batch_size)
 
-    return score[0] #accuracy
+    return score[0]  # accuracy
 
 
 def main():
@@ -92,7 +93,7 @@ def main():
     result = 0
 
     for i in range(iterations):
-        print("\n\n\nRunning iteration %d\n\n" % (i+1))
+        print("\n\n\nRunning iteration %d\n\n" % (i + 1))
         result += run_network()
 
     result = result / iterations
