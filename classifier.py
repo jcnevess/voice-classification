@@ -8,6 +8,7 @@ from numpy import array as array
 from keras.models import Sequential
 from keras.layers import Dense, Activation
 from keras import backend
+from keras import optimizers
 
 def load_dataset(path):
     with open(path, "r") as dataset:
@@ -46,6 +47,7 @@ def load_dataset(path):
 
 
 def create_network(num_features, layer_sizes, activation):
+    #define the layers
     network = Sequential()
     network.add(Dense(layer_sizes[0], input_dim = num_features))
 
@@ -69,13 +71,16 @@ def run_network():
 
     model = create_network(
                 num_features = 20,
-                layer_sizes = [5, 2],
+                layer_sizes = [5, 2], #[10, 2] [5, 2] [15, 7, 2] [10, 5, 2] [15, 10, 5, 2]
                 activation = "sigmoid")
 
-    model.compile(optimizer = "rmsprop",
+    #configure the learning process
+    opt = optimizers.SGD(lr=0.0001, decay=1e-6, momentum=0.9, nesterov=True)
+    model.compile(optimizer = opt,
                     loss = "binary_crossentropy",
                     metrics = ["accuracy"])
 
+    #train the model
     model.fit(train_x, train_y,
         batch_size = batch_size,
         epochs = epochs,
