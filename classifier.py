@@ -6,8 +6,9 @@ import random
 
 from numpy import array as array
 from keras.models import Sequential
-from keras.layers import Dense, Activation
+from keras.layers import Dense
 from keras import backend
+from keras import optimizers
 
 
 def load_dataset(path):
@@ -47,6 +48,7 @@ def load_dataset(path):
 
 
 def create_network(num_features, layer_sizes, activation):
+    # define the layers
     network = Sequential()
     network.add(Dense(layer_sizes[0], input_dim=num_features))
 
@@ -60,7 +62,7 @@ def run_network():
     # Male is 0, Female is 1
     (train_x, train_y), (valid_x, valid_y), (test_x, test_y) = load_dataset("data/voice.csv")
 
-    batch_size = 200
+    batch_size = 50
     num_classes = 2
     epochs = 50
 
@@ -69,14 +71,17 @@ def run_network():
     test_y = keras.utils.to_categorical(test_y, num_classes)
 
     model = create_network(
-        num_features=20,
-        layer_sizes=[5, 2],
-        activation="sigmoid")
+                num_features=20,
+                layer_sizes=[5, 2],  # [10, 2] [5, 2] [15, 7, 2] [10, 5, 2] [15, 10, 5, 2]
+                activation="sigmoid")
 
-    model.compile(optimizer="rmsprop",
+    # configure the learning process
+    opt = optimizers.SGD(lr=0.0001, decay=1e-6, momentum=0.9, nesterov=True)
+    model.compile(optimizer=opt,
                   loss="binary_crossentropy",
                   metrics=["accuracy"])
 
+    # train the model
     model.fit(train_x, train_y,
               batch_size=batch_size,
               epochs=epochs,
