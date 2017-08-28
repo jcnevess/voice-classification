@@ -61,7 +61,7 @@ def run_network():
     #Male is 0, Female is 1
     (train_x, train_y), (valid_x, valid_y), (test_x, test_y) = load_dataset("data/voice.csv")
 
-    batch_size = 200
+    batch_size = 50
     num_classes = 2
     epochs = 50
 
