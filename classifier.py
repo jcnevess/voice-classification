@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 
+"""
+Neural Networks - Final Project - 2017.1
+Júlio Cesar Neves - Veruska Santos
+"""
+
 import csv
 import keras
 import random
@@ -64,7 +69,7 @@ def run_network():
 
     batch_size = 50
     num_classes = 2
-    epochs = 50
+    epochs = 125
 
     train_y = keras.utils.to_categorical(train_y, num_classes)
     valid_y = keras.utils.to_categorical(valid_y, num_classes)
@@ -72,12 +77,11 @@ def run_network():
 
     model = create_network(
                 num_features=20,
-                layer_sizes=[5, 2],  # [10, 2] [5, 2] [15, 7, 2] [10, 5, 2] [15, 10, 5, 2]
+                layer_sizes=[15, 10, 5, 2],  # [10, 2] [5, 2] [15, 7, 2] [10, 5, 2] [15, 10, 5, 2]
                 activation="sigmoid")
 
     # configure the learning process
-    opt = optimizers.SGD(lr=0.0001, decay=1e-6, momentum=0.9, nesterov=True)
-    model.compile(optimizer=opt,
+    model.compile(optimizer="rmsprop",
                   loss="binary_crossentropy",
                   metrics=["accuracy"])
 
@@ -90,11 +94,11 @@ def run_network():
     score = model.evaluate(test_x, test_y,
                            batch_size=batch_size)
 
-    return score[0]  # accuracy
+    return score[1]  # accuracy
 
 
 def main():
-    iterations = 30
+    iterations = 25
     result = 0
 
     for i in range(iterations):
