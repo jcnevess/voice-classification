@@ -1,7 +1,9 @@
-# Projeto de Redes Neurais - 2017.1
+# Neural Networks Final Project - 2017.1
 
-Equipe:
-Júlio César Neves,
-Veruska Santos
+Team:
+- Júlio César Neves
+- Veruska Santos
 
-Classificação do gênero de interlocutores utilizando características vocais
+Classifying interlocutor gender based on vocal characteristics.
+
+Inspired by this [Kaggle challenge](https://www.kaggle.com/primaryobjects/voicegender).
